@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planner</title>
+
+  <link rel="stylesheet" href="./styles/main.css" />
+  <link rel="stylesheet" href="./styles/components.css" />
+  <link rel="stylesheet" href="./styles/radar.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="topbar__brand">
+      <div class="brand__logo">⚡</div>
+      <div class="brand__text">
+        <div class="brand__title">Планер</div>
+        <div class="brand__subtitle">Muscles • Brains • Discipline • Endurance • Mental</div>
+      </div>
+    </div>
+
+    <!-- ✅ ID під events.js -->
+    <button id="settingsBtn" class="iconBtn" type="button" aria-label="Налаштування">⚙️</button>
+  </header>
+
+  <main class="shell">
+    <!-- Day carousel -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Дні</h2>
+        <div class="panel__actions">
+          <button id="addDay" class="btn btn--primary" type="button">+ День</button>
+        </div>
+      </div>
+
+      <div class="carousel">
+        <button id="prevDay" class="carousel__nav" type="button">‹</button>
+        <div id="dayTrack" class="carousel__track"></div>
+        <button id="nextDay" class="carousel__nav" type="button">›</button>
+      </div>
+
+      <div class="dayMeta">
+        <div id="dayTitle" class="dayMeta__title">—</div>
+        <div id="dayDate" class="dayMeta__date">—</div>
+      </div>
+    </section>
+
+    <!-- Radar + quick stats -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Сьогодні</h2>
+        <button id="resetDay" class="btn btn--ghost" type="button">Скинути день</button>
+      </div>
+
+      <div class="todayGrid">
+        <div class="radarCard">
+          <canvas id="radar" width="320" height="320"></canvas>
+          <div class="radarHint">Заповнюй задачі — графік росте</div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat__label">Закрито</div>
+            <div id="doneCount" class="stat__value">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat__label">Задачі</div>
+            <div id="taskCount" class="stat__value">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat__label">Серія</div>
+            <div id="streak" class="stat__value">0</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tasks -->
+    <section class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Задачі дня</h2>
+        <button id="addTask" class="btn btn--primary" type="button">+ Задача</button>
+      </div>
+
+      <!-- ✅ контейнер для вкладок -->
+      <div id="taskFilters" class="filters">
+        <button class="chip is-active" data-filter="all" type="button">Всі</button>
+        <button class="chip" data-filter="muscles" type="button">Muscles</button>
+        <button class="chip" data-filter="brains" type="button">Brains</button>
+        <button class="chip" data-filter="endurance" type="button">Endurance</button>
+        <button class="chip" data-filter="mental" type="button">Mental</button>
+      </div>
+
+      <div id="taskList" class="taskList"></div>
+      <p id="emptyTasks" class="muted hidden">Нема задач. Додай першу 🙂</p>
+    </section>
+  </main>
+
+  <!-- ✅ ЄДИНА модалка для задач -->
+  <div id="taskModal" class="modal hidden">
+    <div class="modal__backdrop" id="taskModalBackdrop"></div>
+
+    <div class="modal__card">
+      <h3 class="modal__title">Додати задачу</h3>
+
+      <form id="taskModalForm" class="modal__form">
+        <input
+          id="taskTitleInput"
+          class="input"
+          type="text"
+          placeholder="Назва задачі"
+          autocomplete="off"
+          required
+        />
+
+        <!-- ✅ під events.js: categorySelect -->
+        <select id="taskCategorySelect" class="input">
+          <option value="muscles">Muscles</option>
+          <option value="brains">Brains</option>
+          <option value="endurance">Endurance</option>
+          <option value="mental">Mental</option>
+        </select>
+
+        <!-- ✅ Muscles fields (окремо) -->
+        <div id="musclesFields" class="modal__muscles hidden">
+          <input id="exerciseInput" class="input" type="text" placeholder="Вправа (наприклад: Жим лежачи)" />
+          <div class="row">
+            <input id="setsInput" class="input" type="number" min="1" placeholder="Підходи" />
+            <input id="repsInput" class="input" type="number" min="1" placeholder="Повтори" />
+            <input id="weightInput" class="input" type="number" min="0" step="0.5" placeholder="Вага (кг)" />
+          </div>
+        </div>
+
+        <div class="modal__actions">
+          <!-- ✅ під events.js -->
+          <button type="button" class="btn" id="taskCancelBtn">Скасувати</button>
+          <button type="submit" class="btn btn--primary" id="taskSubmitBtn">Додати</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ✅ Settings -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal__content">
+      <div class="modal__head">
+        <h3>Налаштування</h3>
+        <button id="closeSettings" class="iconBtn" type="button">✕</button>
+      </div>
+
+      <div class="form">
+        <p class="muted">
+          Тут потім додамо “ідеальні показники” для Muscles (bench 100×5 і т.д.) і будемо порівнювати прогрес.
+        </p>
+        <div class="field">
+  <span class="field__label">Цілі Muscles (ідеал)</span>
+
+  <input id="goalExercise" class="input" placeholder="Вправа (напр. Жим лежачи)" />
+  <div class="row">
+    <input id="goalWeight" class="input" type="number" min="0" step="0.5" placeholder="Вага (кг)" />
+    <input id="goalReps" class="input" type="number" min="0" step="1" placeholder="Повтори" />
+  </div>
+
+  <button id="saveGoal" class="btn btn--primary" type="button">Зберегти ціль</button>
+</div>
+
+<div id="goalsList" class="muted" style="margin-top:10px;"></div>
+
+
+        <button id="resetAll" class="btn btn--danger" type="button">Скинути ВСЕ (LocalStorage)</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
