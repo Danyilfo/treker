@@ -300,12 +300,4 @@
 .radarHint{
   color: rgba(231,236,255,.55);
 }
-.topbar{
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,.05),
-    rgba(255,255,255,.02)
-  );
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  backdrop-filter: blur(8px);
-}
+
