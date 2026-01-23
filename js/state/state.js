@@ -136,9 +136,14 @@ export function removeMuscleGoal(state, exercise) {
   if (state.goals?.muscles) delete state.goals.muscles[key];
   saveState(state);
 }
+// --- normalize (має бути в цьому файлі, вище за getMuscleGoal) ---
+function norm(s) {
+  return String(s ?? "").trim().toLowerCase();
+}
 
+// --- goals getters ---
 export function getMuscleGoals(state) {
-  return state.goals?.muscles ?? {};
+  return state?.goals?.muscles ?? {};
 }
 
 export function getMuscleGoal(state, exercise) {
@@ -146,6 +151,7 @@ export function getMuscleGoal(state, exercise) {
   if (!key) return null;
   return state?.goals?.muscles?.[key] ?? null;
 }
+
 
 
 export function getMuscleHistory(state, exercise) {

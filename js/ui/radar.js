@@ -1,7 +1,6 @@
 // planner/js/ui/radar.js
 import { getActiveDay, getMuscleGoal, estimate1RM } from "../state/state.js";
 
-
 const AXES = ["Muscles", "Brains", "Discipline", "Endurance", "Mental"];
 const KEY_BY_AXIS = {
   Muscles: "muscles",
@@ -18,13 +17,13 @@ export function drawRadar(state) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
-  // auto-resize під реальний розмір (щоб не було 0x0 / мило)
+  // auto-resize під реальний розмір
   const rect = canvas.getBoundingClientRect();
   if (rect.width > 0 && rect.height > 0) {
-    const w = Math.round(rect.width);
-    const h = Math.round(rect.height);
-    if (canvas.width !== w) canvas.width = w;
-    if (canvas.height !== h) canvas.height = h;
+    const cw = Math.round(rect.width);
+    const ch = Math.round(rect.height);
+    if (canvas.width !== cw) canvas.width = cw;
+    if (canvas.height !== ch) canvas.height = ch;
   }
 
   const w = canvas.width;
@@ -56,27 +55,22 @@ export function drawRadar(state) {
     ctx.fillStyle = "rgba(231,236,255,.85)";
     ctx.font = "12px system-ui";
 
-   const text = name;
-const metrics = ctx.measureText(text);
-const textW = metrics.width;
+    const text = name;
+    const textW = ctx.measureText(text).width;
 
-let tx = x;
-let ty = y;
+    let tx = x;
+    let ty = y;
 
-// горизонталь
-if (x < cx) tx = x - textW - 8;
-else tx = x + 8;
+    if (x < cx) tx = x - textW - 8;
+    else tx = x + 8;
 
-// вертикаль
-if (y < cy) ty = y - 6;
-else ty = y + 14;
+    if (y < cy) ty = y - 6;
+    else ty = y + 14;
 
-// захист від виходу за canvas
-tx = Math.max(6, Math.min(tx, w - textW - 6));
-ty = Math.max(12, Math.min(ty, h - 6));
+    tx = Math.max(6, Math.min(tx, w - textW - 6));
+    ty = Math.max(12, Math.min(ty, h - 6));
 
-ctx.fillText(text, tx, ty);
-
+    ctx.fillText(text, tx, ty);
   });
 
   // values 0..1
@@ -84,9 +78,14 @@ ctx.fillText(text, tx, ty);
 
   const points = AXES.map((axis, i) => {
     const key = KEY_BY_AXIS[axis];
-    const v = clamp(vals[key] ?? 0, 0, 1);
+    const vRaw = vals[key] ?? 0;
+    const v = safeClamp(vRaw, 0, 1); // ✅ захист від NaN/Infinity
+
     const a = angleFor(i, AXES.length);
-    return [cx + Math.cos(a) * radius * v, cy + Math.sin(a) * radius * v];
+    const px = cx + Math.cos(a) * radius * v;
+    const py = cy + Math.sin(a) * radius * v;
+
+    return [px, py];
   });
 
   // fill
@@ -128,6 +127,13 @@ function getDayScores(state) {
 
   byCat.discipline = d / 4;
 
+  // ✅ фінальний safe (щоб нічого не зламало canvas)
+  byCat.muscles = safeClamp(byCat.muscles, 0, 1);
+  byCat.brains = safeClamp(byCat.brains, 0, 1);
+  byCat.endurance = safeClamp(byCat.endurance, 0, 1);
+  byCat.mental = safeClamp(byCat.mental, 0, 1);
+  byCat.discipline = safeClamp(byCat.discipline, 0, 1);
+
   return byCat;
 }
 
@@ -143,7 +149,15 @@ function calcMusclesScore(state, tasks) {
     const exKey = norm(exRaw);
     if (!exKey) continue;
 
-    const cur1RM = estimate1RM(t.weight, t.reps);
+    const w = Number(t.weight ?? 0);
+    const r = Number(t.reps ?? 0);
+
+    // ✅ якщо reps/weight неадекватні — пропускаємо (інакше NaN)
+    if (!Number.isFinite(w) || !Number.isFinite(r) || w <= 0 || r <= 0) continue;
+
+    const cur1RM = Number(estimate1RM(w, r));
+    if (!Number.isFinite(cur1RM) || cur1RM <= 0) continue;
+
     const prev = bestByExercise.get(exKey) ?? 0;
     if (cur1RM > prev) bestByExercise.set(exKey, cur1RM);
   }
@@ -155,14 +169,18 @@ function calcMusclesScore(state, tasks) {
   let cnt = 0;
 
   for (const exKey of exercises) {
-    const goal = getMuscleGoal(state, exKey); // state.js нормалізує ключ теж
-    if (!goal || !goal.weight || !goal.reps) continue;
+    const goal = getMuscleGoal(state, exKey);
+    if (!goal) continue;
 
-    const goal1RM = estimate1RM(goal.weight, goal.reps);
-    if (goal1RM <= 0) continue;
+    const gw = Number(goal.weight ?? 0);
+    const gr = Number(goal.reps ?? 0);
+    if (!Number.isFinite(gw) || !Number.isFinite(gr) || gw <= 0 || gr <= 0) continue;
+
+    const goal1RM = Number(estimate1RM(gw, gr));
+    if (!Number.isFinite(goal1RM) || goal1RM <= 0) continue;
 
     const cur1RM = bestByExercise.get(exKey) ?? 0;
-    const ratio = clamp(cur1RM / goal1RM, 0, 1);
+    const ratio = safeClamp(cur1RM / goal1RM, 0, 1);
 
     sum += ratio;
     cnt++;
@@ -171,7 +189,7 @@ function calcMusclesScore(state, tasks) {
   // якщо цілей не задано — графік все одно трохи рухається
   if (cnt === 0) return 0.2;
 
-  return sum / cnt;
+  return safeClamp(sum / cnt, 0, 1);
 }
 
 function polygon(ctx, cx, cy, r, n) {
@@ -191,10 +209,13 @@ function angleFor(i, n) {
   return -Math.PI / 2 + (Math.PI * 2 * i) / n;
 }
 
-function clamp(v, a, b) {
-  return Math.max(a, Math.min(b, v));
+function safeClamp(v, a, b) {
+  const num = Number(v);
+  if (!Number.isFinite(num)) return a;
+  return Math.max(a, Math.min(b, num));
 }
 
 function norm(s) {
   return String(s ?? "").trim().toLowerCase();
 }
+
