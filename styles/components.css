@@ -266,21 +266,18 @@
   border-color: var(--accent-line);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
+/* універсальний “glass” для iOS */
 .panel,
-.modal__card,
-.stats .stat,
-.radarCard{
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,.06),
-    rgba(255,255,255,.03)
-  );
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow:
-    0 10px 30px rgba(0,0,0,.6),
-    inset 0 1px 0 rgba(255,255,255,.04);
-  backdrop-filter: blur(6px);
+.radarCard,
+.stat,
+.taskList,
+.modal__card {
+  background: rgba(20, 20, 20, 0.55);          /* темніше */
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);          /* ✅ важливо для iPhone */
 }
+
 .dayPill{
   background: rgba(255,255,255,.04);
   border: 1px solid rgba(255,255,255,.08);
