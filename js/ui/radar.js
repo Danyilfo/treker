@@ -1,6 +1,7 @@
 // planner/js/ui/radar.js
 import { getActiveDay, getMuscleGoal, estimate1RM } from "../state/state.js";
 
+
 const AXES = ["Muscles", "Brains", "Discipline", "Endurance", "Mental"];
 const KEY_BY_AXIS = {
   Muscles: "muscles",

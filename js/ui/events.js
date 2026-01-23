@@ -9,10 +9,13 @@ import {
   deleteTask,
   resetActiveDay,
   setTaskFilter,
+  setMuscleGoal,
+  getMuscleGoals,
+  removeMuscleGoal,
 } from "../state/state.js";
 
 import { renderAll } from "./render.js";
-import { setMuscleGoal, getMuscleGoals, removeMuscleGoal } from "../state/state.js";
+
 
 /* ----------------- Days ----------------- */
 

@@ -142,10 +142,11 @@ export function getMuscleGoals(state) {
 }
 
 export function getMuscleGoal(state, exercise) {
-  const key = normalizeExercise(exercise);
+  const key = norm(exercise);
   if (!key) return null;
-  return state.goals?.muscles?.[key] ?? null;
+  return state?.goals?.muscles?.[key] ?? null;
 }
+
 
 export function getMuscleHistory(state, exercise) {
   const key = normalizeExercise(exercise);
