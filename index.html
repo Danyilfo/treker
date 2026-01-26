@@ -20,12 +20,12 @@
       </div>
     </div>
 
-    <!-- ✅ ID під events.js -->
+    <!-- ✅ важливо: саме settingsBtn -->
     <button id="settingsBtn" class="iconBtn" type="button" aria-label="Налаштування">⚙️</button>
   </header>
 
   <main class="shell">
-    <!-- Day carousel -->
+    <!-- Days -->
     <section class="panel">
       <div class="panel__head">
         <h2 class="panel__title">Дні</h2>
@@ -46,7 +46,7 @@
       </div>
     </section>
 
-    <!-- Radar + quick stats -->
+    <!-- Radar + stats -->
     <section class="panel">
       <div class="panel__head">
         <h2 class="panel__title">Сьогодні</h2>
@@ -83,7 +83,7 @@
         <button id="addTask" class="btn btn--primary" type="button">+ Задача</button>
       </div>
 
-      <!-- ✅ контейнер для вкладок -->
+      <!-- ✅ важливо: taskFilters -->
       <div id="taskFilters" class="filters">
         <button class="chip is-active" data-filter="all" type="button">Всі</button>
         <button class="chip" data-filter="muscles" type="button">Muscles</button>
@@ -97,24 +97,25 @@
     </section>
   </main>
 
-  <!-- ✅ ЄДИНА модалка для задач -->
+  <!-- ✅ Task Modal -->
   <div id="taskModal" class="modal hidden">
     <div class="modal__backdrop" id="taskModalBackdrop"></div>
 
     <div class="modal__card">
       <h3 class="modal__title">Додати задачу</h3>
 
+      <!-- ✅ важливо: taskModalForm -->
       <form id="taskModalForm" class="modal__form">
+        <!-- ✅ важливо: taskTitleInput -->
         <input
           id="taskTitleInput"
           class="input"
           type="text"
           placeholder="Назва задачі"
           autocomplete="off"
-          required
         />
 
-        <!-- ✅ під events.js: categorySelect -->
+        <!-- ✅ важливо: taskCategorySelect -->
         <select id="taskCategorySelect" class="input">
           <option value="muscles">Muscles</option>
           <option value="brains">Brains</option>
@@ -122,28 +123,44 @@
           <option value="mental">Mental</option>
         </select>
 
-        <!-- ✅ Muscles fields (окремо) -->
+        <!-- ✅ Muscles fields -->
         <div id="musclesFields" class="modal__muscles hidden">
-          <input id="exerciseInput" class="input" type="text" placeholder="Вправа..." list="musclesExercises" />
-<datalist id="musclesExercises"></datalist>
+
+          <!-- ✅ select з goals -->
+          <select id="exerciseSelect" class="input"></select>
+
+          <!-- ✅ якщо "інша" -->
+          <input
+            id="exerciseCustomInput"
+            class="input hidden"
+            type="text"
+            placeholder="Введи вправу вручну"
+            autocomplete="off"
+          />
 
           <div class="row">
+            <!-- ✅ важливо: setsInput / repsInput / weightInput -->
             <input id="setsInput" class="input" type="number" min="1" placeholder="Підходи" />
             <input id="repsInput" class="input" type="number" min="1" placeholder="Повтори" />
             <input id="weightInput" class="input" type="number" min="0" step="0.5" placeholder="Вага (кг)" />
           </div>
+
+          <!-- ✅ опціонально: якщо хочеш підказку -->
+          <div class="muted" style="font-size:12px;">
+            Якщо вправи нема в списку — обери “Інша” і введи вручну.
+          </div>
         </div>
 
         <div class="modal__actions">
-          <!-- ✅ під events.js -->
+          <!-- ✅ важливо: taskCancelBtn -->
           <button type="button" class="btn" id="taskCancelBtn">Скасувати</button>
-          <button type="submit" class="btn btn--primary" id="taskSubmitBtn">Додати</button>
+          <button type="submit" class="btn btn--primary">Додати</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ✅ Settings -->
+  <!-- ✅ Settings Modal -->
   <div id="settingsModal" class="modal hidden">
     <div class="modal__content">
       <div class="modal__head">
@@ -153,22 +170,34 @@
 
       <div class="form">
         <p class="muted">
-          Тут потім додамо “ідеальні показники” для Muscles (bench 100×5 і т.д.) і будемо порівнювати прогрес.
+          Тут задаємо “бажані показники” для Muscles. Вони будуть основою для прогресу в радарі.
         </p>
-        <div class="field">
-  <span class="field__label">Цілі Muscles (ідеал)</span>
 
-  <input id="goalExercise" class="input" placeholder="Вправа (напр. Жим лежачи)" />
-  <div class="row">
-    <input id="goalWeight" class="input" type="number" min="0" step="0.5" placeholder="Вага (кг)" />
-    <input id="goalReps" class="input" type="number" min="0" step="1" placeholder="Повтори" />
-  </div>
+        <!-- ✅ Goals UI -->
+        <label class="field">
+          <span class="field__label">Вправа</span>
+          <input id="goalExercise" class="input" placeholder="Напр.: Жим лежачи" />
+        </label>
 
-  <button id="saveGoal" class="btn btn--primary" type="button">Зберегти ціль</button>
-</div>
+        <div class="musclesFields">
+          <label class="field">
+            <span class="field__label">Вага (кг)</span>
+            <input id="goalWeight" class="input" type="number" min="0" step="0.5" placeholder="100" />
+          </label>
 
-<div id="goalsList" class="muted" style="margin-top:10px;"></div>
+          <label class="field">
+            <span class="field__label">Повтори</span>
+            <input id="goalReps" class="input" type="number" min="1" step="1" placeholder="5" />
+          </label>
+        </div>
 
+        <button id="saveGoal" class="btn btn--primary" type="button">Зберегти ціль</button>
+
+        <!-- ✅ список цілей -->
+        <div class="taskCard" style="margin-top:10px;">
+          <div style="font-weight:800;margin-bottom:6px;">Мої цілі Muscles</div>
+          <div id="goalsList" class="muted">Поки немає цілей Muscles.</div>
+        </div>
 
         <button id="resetAll" class="btn btn--danger" type="button">Скинути ВСЕ (LocalStorage)</button>
       </div>
@@ -178,3 +207,4 @@
   <script type="module" src="./js/app.js"></script>
 </body>
 </html>
+

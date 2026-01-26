@@ -16,7 +16,6 @@ import {
 
 import { renderAll } from "./render.js";
 
-
 /* ----------------- Days ----------------- */
 
 document.getElementById("addDay")?.addEventListener("click", () => {
@@ -73,19 +72,60 @@ const taskCategorySelect = document.getElementById("taskCategorySelect");
 const taskCancelBtn = document.getElementById("taskCancelBtn");
 
 const musclesFields = document.getElementById("musclesFields");
-const exerciseInput = document.getElementById("exerciseInput");
+
+// ✅ NEW: select з вправами з goals + поле "інша вправа"
+const exerciseSelect = document.getElementById("exerciseSelect");
+const exerciseCustomInput = document.getElementById("exerciseCustomInput");
+
+// старі поля muscles (залишаємо)
 const setsInput = document.getElementById("setsInput");
 const repsInput = document.getElementById("repsInput");
 const weightInput = document.getElementById("weightInput");
-const exerciseDatalist = document.getElementById("musclesExercises");
 
-function fillMusclesExercises() {
-  if (!exerciseDatalist) return;
+// 1) Підтягуємо список вправ з goals у select
+function fillExerciseSelect() {
+  if (!exerciseSelect) return;
 
   const goals = getMuscleGoals(state); // { "жим лежачи": {weight,reps}, ... }
-  const names = Object.keys(goals || {}).sort((a,b)=>a.localeCompare(b,"uk"));
+  const keys = Object.keys(goals || {}).sort((a, b) => a.localeCompare(b, "uk"));
 
-  exerciseDatalist.innerHTML = names.map(n => `<option value="${n}"></option>`).join("");
+  // reset
+  exerciseSelect.innerHTML = "";
+
+  // placeholder
+  const opt0 = document.createElement("option");
+  opt0.value = "";
+  opt0.textContent = keys.length ? "Обери вправу зі списку" : "Нема цілей — обери “Інша”";
+  exerciseSelect.appendChild(opt0);
+
+  // options з goals
+  keys.forEach((k) => {
+    const opt = document.createElement("option");
+    opt.value = k;      // ключ вже нормалізований в state (lowercase)
+    opt.textContent = k;
+    exerciseSelect.appendChild(opt);
+  });
+
+  // "Інша"
+  const optOther = document.createElement("option");
+  optOther.value = "__custom__";
+  optOther.textContent = "Інша (ввести вручну)";
+  exerciseSelect.appendChild(optOther);
+
+  // дефолт
+  exerciseSelect.value = keys.length ? keys[0] : "__custom__";
+  syncExerciseCustomVisibility();
+}
+
+function syncExerciseCustomVisibility() {
+  if (!exerciseSelect || !exerciseCustomInput) return;
+  const isCustom = exerciseSelect.value === "__custom__";
+  exerciseCustomInput.classList.toggle("hidden", !isCustom);
+  if (isCustom) {
+    exerciseCustomInput.focus();
+  } else {
+    exerciseCustomInput.value = "";
+  }
 }
 
 function syncMusclesFields() {
@@ -95,7 +135,12 @@ function syncMusclesFields() {
   // title required тільки для НЕ-muscles
   if (taskTitleInput) {
     taskTitleInput.required = !isMuscles;
-    taskTitleInput.placeholder = isMuscles ? "Напр.: Тренування (опційно)" : "Назва задачі";
+    taskTitleInput.placeholder = isMuscles ? "Назва (опційно)" : "Назва задачі";
+  }
+
+  // коли muscles — оновлюємо select вправ (щоб завжди був актуальний)
+  if (isMuscles) {
+    fillExerciseSelect();
   }
 }
 
@@ -103,15 +148,13 @@ function openTaskModal() {
   taskModal?.classList.remove("hidden");
 
   if (taskTitleInput) taskTitleInput.value = "";
-  if (taskCategorySelect) taskCategorySelect.value = "muscles";
+  if (taskCategorySelect) taskCategorySelect.value = "brains";
 
-
-  if (exerciseInput) exerciseInput.value = "";
   if (setsInput) setsInput.value = "";
   if (repsInput) repsInput.value = "";
   if (weightInput) weightInput.value = "";
 
-  fillMusclesExercises();
+  if (exerciseCustomInput) exerciseCustomInput.value = "";
 
   syncMusclesFields();
   (taskCategorySelect || taskTitleInput)?.focus();
@@ -125,18 +168,31 @@ document.getElementById("addTask")?.addEventListener("click", openTaskModal);
 taskCancelBtn?.addEventListener("click", closeTaskModal);
 taskBackdrop?.addEventListener("click", closeTaskModal);
 taskCategorySelect?.addEventListener("change", syncMusclesFields);
+exerciseSelect?.addEventListener("change", syncExerciseCustomVisibility);
 
-// ✅ ДОДАВАННЯ ЗАДАЧІ (головне!)
+// ✅ ДОДАВАННЯ ЗАДАЧІ
 taskForm?.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const category = (taskCategorySelect?.value || "brains").toLowerCase();
 
   if (category === "muscles") {
-    const exercise = exerciseInput?.value?.trim();
+    // 1) беремо exercise або з select або з custom input
+    let exercise = "";
+
+    const sel = exerciseSelect?.value || "";
+    if (sel === "__custom__") {
+      exercise = exerciseCustomInput?.value?.trim() || "";
+    } else if (sel) {
+      exercise = sel.trim();
+    }
+
+    // fallback: якщо нічого — спробуємо з title (на всяк випадок)
+    if (!exercise) exercise = taskTitleInput?.value?.trim() || "";
+
     if (!exercise) {
       alert("Введи вправу 🙂");
-      exerciseInput?.focus();
+      (exerciseCustomInput || taskTitleInput)?.focus();
       return;
     }
 
@@ -187,33 +243,52 @@ document.getElementById("taskList")?.addEventListener("click", (e) => {
   renderAll(state);
 });
 
-/* ----------------- Settings Modal ----------------- */
+/* ----------------- Settings Modal + Goals ----------------- */
 
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsModal = document.getElementById("settingsModal");
 const closeSettingsBtn = document.getElementById("closeSettings");
 const resetAllBtn = document.getElementById("resetAll");
 
-function renderGoalsList(){
+function openSettings() {
+  settingsModal?.classList.remove("hidden");
+  renderGoalsList();
+}
+
+function closeSettings() {
+  settingsModal?.classList.add("hidden");
+}
+
+settingsBtn?.addEventListener("click", openSettings);
+closeSettingsBtn?.addEventListener("click", closeSettings);
+
+// клік по фону модалки (опціонально)
+settingsModal?.addEventListener("click", (e) => {
+  if (e.target === settingsModal) closeSettings();
+});
+
+function renderGoalsList() {
   const box = document.getElementById("goalsList");
   if (!box) return;
 
   const goals = getMuscleGoals(state);
-  const entries = Object.entries(goals);
+  const entries = Object.entries(goals || {});
 
   if (entries.length === 0) {
     box.textContent = "Поки немає цілей Muscles.";
     return;
   }
 
-  box.innerHTML = entries.map(([ex, g]) => {
-    return `
-      <div style="display:flex;justify-content:space-between;gap:10px;margin:6px 0;">
-        <span>${ex} — ${g.weight}×${g.reps}</span>
-        <button data-del-goal="${ex}" class="btn btn--ghost" type="button">✕</button>
-      </div>
-    `;
-  }).join("");
+  box.innerHTML = entries
+    .map(([ex, g]) => {
+      return `
+        <div style="display:flex;justify-content:space-between;gap:10px;margin:6px 0;align-items:center;">
+          <span>${ex} — ${g.weight}×${g.reps}</span>
+          <button data-del-goal="${ex}" class="btn btn--ghost" type="button">✕</button>
+        </div>
+      `;
+    })
+    .join("");
 }
 
 document.getElementById("saveGoal")?.addEventListener("click", () => {
@@ -232,35 +307,13 @@ document.getElementById("saveGoal")?.addEventListener("click", () => {
 document.getElementById("goalsList")?.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-del-goal]");
   if (!btn) return;
+
   removeMuscleGoal(state, btn.dataset.delGoal);
   renderGoalsList();
   renderAll(state);
 });
 
-// коли відкриваєш settings — одразу показуй список
-document.getElementById("openSettings")?.addEventListener("click", () => {
-  document.getElementById("settingsModal")?.classList.remove("hidden");
-  renderGoalsList();
-  fillMusclesExercises();
-
-});
-
-function openSettings() {
-  settingsModal?.classList.remove("hidden");
-}
-
-function closeSettings() {
-  settingsModal?.classList.add("hidden");
-}
-
-settingsBtn?.addEventListener("click", openSettings);
-closeSettingsBtn?.addEventListener("click", closeSettings);
-
-// клік по фону модалки (опціонально)
-settingsModal?.addEventListener("click", (e) => {
-  if (e.target === settingsModal) closeSettings();
-});
-
+// reset all
 resetAllBtn?.addEventListener("click", () => {
   const ok = confirm("Точно скинути ВСЕ? Це очистить LocalStorage.");
   if (!ok) return;
@@ -268,5 +321,12 @@ resetAllBtn?.addEventListener("click", () => {
   localStorage.removeItem("planner_state_v1");
   location.reload();
 });
+
+/* ----------------- Init ----------------- */
+
+// щоб після першого завантаження все було синхронно
+renderAll(state);
+
+
 
 
