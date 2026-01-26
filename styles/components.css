@@ -49,8 +49,19 @@
 .carousel__track{
   display:flex;
   gap:10px;
-  overflow:hidden;
+
+  overflow-x: auto;      /* ✅ можна скролити */
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+
+  scroll-snap-type: x mandatory; /* optional, але красиво */
+  padding-bottom: 4px;
 }
+.dayPill{
+  scroll-snap-align: center; /* для snap */
+}
+
 
 .dayPill{
   min-width: 108px;

@@ -134,3 +134,16 @@ body{
 }
 
 .modal__actions { display: flex; gap: 10px; justify-content: flex-end; }
+/* ============================= */
+/* iPhone: disable double-tap zoom */
+/* ============================= */
+
+html, body {
+  touch-action: manipulation;
+}
+  html, body{
+    overscroll-behavior: none;
+  }
+  body{
+    overflow-x: hidden;
+  }
