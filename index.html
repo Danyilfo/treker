@@ -124,7 +124,9 @@
 
         <!-- ✅ Muscles fields (окремо) -->
         <div id="musclesFields" class="modal__muscles hidden">
-          <input id="exerciseInput" class="input" type="text" placeholder="Вправа (наприклад: Жим лежачи)" />
+          <input id="exerciseInput" class="input" type="text" placeholder="Вправа..." list="musclesExercises" />
+<datalist id="musclesExercises"></datalist>
+
           <div class="row">
             <input id="setsInput" class="input" type="number" min="1" placeholder="Підходи" />
             <input id="repsInput" class="input" type="number" min="1" placeholder="Повтори" />

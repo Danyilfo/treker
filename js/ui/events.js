@@ -77,6 +77,16 @@ const exerciseInput = document.getElementById("exerciseInput");
 const setsInput = document.getElementById("setsInput");
 const repsInput = document.getElementById("repsInput");
 const weightInput = document.getElementById("weightInput");
+const exerciseDatalist = document.getElementById("musclesExercises");
+
+function fillMusclesExercises() {
+  if (!exerciseDatalist) return;
+
+  const goals = getMuscleGoals(state); // { "жим лежачи": {weight,reps}, ... }
+  const names = Object.keys(goals || {}).sort((a,b)=>a.localeCompare(b,"uk"));
+
+  exerciseDatalist.innerHTML = names.map(n => `<option value="${n}"></option>`).join("");
+}
 
 function syncMusclesFields() {
   const isMuscles = (taskCategorySelect?.value || "") === "muscles";
@@ -93,12 +103,15 @@ function openTaskModal() {
   taskModal?.classList.remove("hidden");
 
   if (taskTitleInput) taskTitleInput.value = "";
-  if (taskCategorySelect) taskCategorySelect.value = "brains";
+  if (taskCategorySelect) taskCategorySelect.value = "muscles";
+
 
   if (exerciseInput) exerciseInput.value = "";
   if (setsInput) setsInput.value = "";
   if (repsInput) repsInput.value = "";
   if (weightInput) weightInput.value = "";
+
+  fillMusclesExercises();
 
   syncMusclesFields();
   (taskCategorySelect || taskTitleInput)?.focus();
@@ -228,6 +241,8 @@ document.getElementById("goalsList")?.addEventListener("click", (e) => {
 document.getElementById("openSettings")?.addEventListener("click", () => {
   document.getElementById("settingsModal")?.classList.remove("hidden");
   renderGoalsList();
+  fillMusclesExercises();
+
 });
 
 function openSettings() {
