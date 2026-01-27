@@ -364,7 +364,27 @@ function closeProfileModal(){
   profileModal?.classList.add("hidden");
 }
 
-profileBtn?.addEventListener("click", openProfile);
+function bindTap(el, fn) {
+  if (!el) return;
+
+  // normal click
+  el.addEventListener("click", fn);
+
+  // iOS fix
+  el.addEventListener(
+    "touchend",
+    (e) => {
+      e.preventDefault();
+      fn(e);
+    },
+    { passive: false }
+  );
+}
+
+bindTap(profileBtn, openProfile);
+bindTap(closeProfile, closeProfileModal);
+bindTap(profileBackdrop, closeProfileModal);
+
 closeProfile?.addEventListener("click", closeProfileModal);
 profileBackdrop?.addEventListener("click", closeProfileModal);
 

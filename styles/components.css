@@ -311,4 +311,8 @@
 .radarHint{
   color: rgba(231,236,255,.55);
 }
+.iconBtn, .btn, .chip, .carousel__nav {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
