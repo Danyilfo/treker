@@ -15,6 +15,8 @@ import {
 } from "../state/state.js";
 
 import { renderAll } from "./render.js";
+import { setProfileField, setAvatar } from "../state/state.js";
+import { drawProfileRadar } from "./profileRadar.js";
 
 /* ----------------- Days ----------------- */
 
@@ -326,6 +328,71 @@ resetAllBtn?.addEventListener("click", () => {
 
 // щоб після першого завантаження все було синхронно
 renderAll(state);
+/* ----------------- Profile Modal ----------------- */
+
+const profileBtn = document.getElementById("profileBtn");
+const profileModal = document.getElementById("profileModal");
+const profileBackdrop = document.getElementById("profileBackdrop");
+const closeProfile = document.getElementById("closeProfile");
+
+const avatarImg = document.getElementById("avatarImg");
+const avatarInput = document.getElementById("avatarInput");
+const removeAvatarBtn = document.getElementById("removeAvatar");
+
+const ageEl = document.getElementById("profileAge");
+const heightEl = document.getElementById("profileHeight");
+const weightEl = document.getElementById("profileWeight");
+
+function openProfile(){
+  profileModal?.classList.remove("hidden");
+
+  // fill values
+  const p = state.profile ?? {};
+  if (ageEl) ageEl.value = p.age ?? "";
+  if (heightEl) heightEl.value = p.height ?? "";
+  if (weightEl) weightEl.value = p.weight ?? "";
+
+  if (avatarImg) {
+    avatarImg.src = p.avatar ? p.avatar : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='14' fill='%23222222'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-size='26' fill='%23ffffff'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E";
+  }
+
+  // draw radar
+  requestAnimationFrame(() => drawProfileRadar(state));
+}
+
+function closeProfileModal(){
+  profileModal?.classList.add("hidden");
+}
+
+profileBtn?.addEventListener("click", openProfile);
+closeProfile?.addEventListener("click", closeProfileModal);
+profileBackdrop?.addEventListener("click", closeProfileModal);
+
+// live save fields
+ageEl?.addEventListener("input", () => setProfileField(state, "age", ageEl.value));
+heightEl?.addEventListener("input", () => setProfileField(state, "height", heightEl.value));
+weightEl?.addEventListener("input", () => setProfileField(state, "weight", weightEl.value));
+
+// avatar upload (iPhone ok)
+avatarInput?.addEventListener("change", () => {
+  const file = avatarInput.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = String(reader.result || "");
+    setAvatar(state, dataUrl);
+    if (avatarImg) avatarImg.src = dataUrl;
+    drawProfileRadar(state);
+  };
+  reader.readAsDataURL(file);
+});
+
+removeAvatarBtn?.addEventListener("click", () => {
+  setAvatar(state, "");
+  if (avatarImg) avatarImg.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='14' fill='%23222222'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' font-size='26' fill='%23ffffff'%3E%F0%9F%91%A4%3C/text%3E%3C/svg%3E";
+  drawProfileRadar(state);
+});
 
 
 

@@ -9,6 +9,12 @@ export const state = loadState() ?? {
   streak: 0,
   taskFilter: "all",
   goals: { muscles: {} }, // exerciseKey -> {weight,reps}
+  profile: {
+  age: "",
+  height: "",
+  weight: "",
+  avatar: "", // dataURL
+},
 };
 
 if (!state.activeDayId) state.activeDayId = state.days[0]?.id ?? null;
@@ -264,6 +270,58 @@ function startOfDay(ts) {
   const d = new Date(ts);
   d.setHours(0, 0, 0, 0);
   return d.getTime();
+}
+export function setProfileField(state, key, value) {
+  state.profile = state.profile ?? { age:"", height:"", weight:"", avatar:"" };
+  state.profile[key] = value;
+  saveState(state);
+}
+
+export function setAvatar(state, dataUrl) {
+  state.profile = state.profile ?? { age:"", height:"", weight:"", avatar:"" };
+  state.profile.avatar = dataUrl || "";
+  saveState(state);
+}
+
+// ✅ Muscles Progres: середній % до цілей по всіх вправах (best 1RM / goal 1RM)
+export function calcOverallMusclesProgress(state) {
+  const goals = state?.goals?.muscles ?? {};
+  const goalEntries = Object.entries(goals);
+  if (goalEntries.length === 0) return 0;
+
+  // зібрати best 1RM по кожній вправі з усіх днів
+  const bestByEx = new Map(); // exKey -> best1RM
+
+  const days = Array.isArray(state.days) ? state.days : [];
+  for (const d of days) {
+    const tasks = Array.isArray(d.tasks) ? d.tasks : [];
+    for (const t of tasks) {
+      if (!t?.done) continue;
+      if (t.category !== "muscles") continue;
+
+      const exKey = String(t.exercise ?? t.title ?? "").trim().toLowerCase();
+      if (!exKey) continue;
+
+      const one = estimate1RM(t.weight, t.reps);
+      const prev = bestByEx.get(exKey) ?? 0;
+      if (one > prev) bestByEx.set(exKey, one);
+    }
+  }
+
+  let sum = 0;
+  let cnt = 0;
+
+  for (const [exKey, goal] of goalEntries) {
+    const goal1 = estimate1RM(goal.weight, goal.reps);
+    if (goal1 <= 0) continue;
+
+    const cur1 = bestByEx.get(exKey) ?? 0;
+    const ratio = Math.max(0, Math.min(1, cur1 / goal1));
+    sum += ratio;
+    cnt++;
+  }
+
+  return cnt ? (sum / cnt) : 0;
 }
 
 
