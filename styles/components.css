@@ -333,4 +333,10 @@
   -webkit-appearance: none; /* ✅ iPhone */
   appearance: none;
 }
+.langSelect{
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
+  -webkit-appearance: menulist;
+}
 
