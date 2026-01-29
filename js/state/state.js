@@ -83,14 +83,14 @@ export function addTask(state, payload) {
 
   if (payload.category === "muscles") {
     t.type = "muscles";
-    t.exercise = String(payload.exercise ?? "").trim() || "Вправа";
+    t.exercise = String(payload.exercise ?? "").trim() || "Exercise";
     t.sets = Number(payload.sets ?? 0);
     t.reps = Number(payload.reps ?? 0);
     t.weight = Number(payload.weight ?? 0);
     t.title = t.exercise;
   } else {
     t.type = "simple";
-    t.title = String(payload.title ?? "").trim() || "Задача";
+    t.title = String(payload.title ?? "").trim() || "Problem";
   }
 
   day.tasks.push(t);

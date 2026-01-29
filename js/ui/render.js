@@ -1,6 +1,11 @@
 // planner/js/ui/render.js
-import { WEEKDAYS_UA } from "../data/defaults.js";
 import { drawRadar } from "./radar.js";
+import { getLang, t } from "../i18n/i18n.js";
+
+const WEEKDAYS = {
+  uk: ["Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота", "Неділя"],
+  en: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+};
 
 export function renderAll(state) {
   renderDays(state);
@@ -15,23 +20,33 @@ function getActiveDayLocal(state) {
   return days.find((d) => d.id === state.activeDayId) ?? days[0] ?? null;
 }
 
+function getLocale() {
+  const lang = getLang();
+  return lang === "en" ? "en-US" : "uk-UA";
+}
+
+function getWeekdayLabel(idx) {
+  const lang = getLang();
+  const arr = WEEKDAYS[lang] || WEEKDAYS.uk;
+  return arr[idx] ?? t("day_fallback");
+}
+
 function renderHeader(state) {
   const day = getActiveDayLocal(state);
 
   const titleEl = document.getElementById("dayTitle");
   const dateEl = document.getElementById("dayDate");
-
   if (!titleEl || !dateEl) return;
 
   if (!day) {
-    titleEl.textContent = "День";
+    titleEl.textContent = t("day_fallback");
     dateEl.textContent = "";
     return;
   }
 
-  titleEl.textContent = WEEKDAYS_UA[day.weekdayIndex] ?? "День";
+  titleEl.textContent = getWeekdayLabel(day.weekdayIndex);
   dateEl.textContent = day.createdAt
-    ? new Date(day.createdAt).toLocaleDateString("uk-UA")
+    ? new Date(day.createdAt).toLocaleDateString(getLocale())
     : "";
 }
 
@@ -42,28 +57,31 @@ function renderDays(state) {
   track.innerHTML = "";
 
   const days = Array.isArray(state.days) ? state.days : [];
+  const tasksWord = t("tasks_word");
 
   days.forEach((d) => {
     const pill = document.createElement("div");
     pill.className = "dayPill" + (d.id === state.activeDayId ? " is-active" : "");
     pill.dataset.dayId = d.id;
 
-    const t = document.createElement("div");
-    t.className = "dayPill__title";
-    t.textContent = WEEKDAYS_UA[d.weekdayIndex] ?? "День";
+    const title = document.createElement("div");
+    title.className = "dayPill__title";
+    title.textContent = getWeekdayLabel(d.weekdayIndex);
 
-    const m = document.createElement("div");
-    m.className = "dayPill__meta";
+    const meta = document.createElement("div");
+    meta.className = "dayPill__meta";
 
     const tasks = Array.isArray(d.tasks) ? d.tasks : [];
-    m.textContent = `${tasks.filter((x) => x.done).length}/${tasks.length} задач`;
+    const done = tasks.filter((x) => x.done).length;
+    meta.textContent = `${done}/${tasks.length} ${tasksWord}`;
 
-    pill.append(t, m);
+    pill.append(title, meta);
     track.appendChild(pill);
   });
+
   requestAnimationFrame(() => {
     const active = track.querySelector(".dayPill.is-active");
-    if (!active) return
+    if (!active) return;
     active.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   });
 }
@@ -84,11 +102,9 @@ function renderTasks(state) {
 
   const tasks = Array.isArray(day.tasks) ? day.tasks : [];
 
-  // фільтр
   const filter = state.taskFilter ?? "all";
   const visible = filter === "all" ? tasks : tasks.filter((t) => t.category === filter);
 
-  // підсвітка табів
   document.querySelectorAll("#taskFilters [data-filter]").forEach((b) => {
     b.classList.toggle("is-active", b.dataset.filter === filter);
   });
@@ -97,7 +113,6 @@ function renderTasks(state) {
     emptyEl.classList.remove("hidden");
     return;
   }
-
   emptyEl.classList.add("hidden");
 
   visible.forEach((task) => {
@@ -105,35 +120,32 @@ function renderTasks(state) {
     row.className = "task" + (task.done ? " is-done" : "");
     row.dataset.taskId = task.id;
 
-    // ✅ чекбокс (галочка)
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.className = "task__check";
     cb.checked = !!task.done;
-    
+
     const body = document.createElement("div");
     body.className = "task__body";
 
     const title = document.createElement("div");
     title.className = "task__title";
-    title.textContent = task.title ?? "Задача";
+    title.textContent = task.title ?? "Task";
 
     const meta = document.createElement("div");
     meta.className = "task__meta";
 
-    // ✅ Muscles картка: sets x reps • weight кг
     if (task.category === "muscles") {
       const sets = Number(task.sets || 0);
       const reps = Number(task.reps || 0);
       const weight = Number(task.weight || 0);
-      meta.textContent = `${sets}x${reps} • ${weight} кг`;
+      meta.textContent = `${sets}x${reps} • ${weight} kg`;
     } else {
       meta.textContent = (task.category ?? "").toUpperCase();
     }
 
     body.append(title, meta);
 
-    // delete
     const del = document.createElement("button");
     del.className = "task__del";
     del.textContent = "✕";
@@ -167,5 +179,7 @@ function renderStats(state) {
   doneCountEl.textContent = String(done);
   streakEl.textContent = String(state?.streak ?? 0);
 }
+
+
 
 

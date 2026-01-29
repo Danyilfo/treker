@@ -315,4 +315,22 @@
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+.topbar__actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.langSelect{
+  height:38px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,.18);
+  color: var(--text);
+  font-weight: 800;
+  outline: none;
+  -webkit-appearance: none; /* ✅ iPhone */
+  appearance: none;
+}
 

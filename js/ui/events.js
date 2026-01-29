@@ -97,7 +97,7 @@ function fillExerciseSelect() {
   // placeholder
   const opt0 = document.createElement("option");
   opt0.value = "";
-  opt0.textContent = keys.length ? "Обери вправу зі списку" : "Нема цілей — обери “Інша”";
+  opt0.textContent = keys.length ? "Select an exercise from the list" : "No goals - select“Інша”";
   exerciseSelect.appendChild(opt0);
 
   // options з goals
@@ -111,7 +111,7 @@ function fillExerciseSelect() {
   // "Інша"
   const optOther = document.createElement("option");
   optOther.value = "__custom__";
-  optOther.textContent = "Інша (ввести вручну)";
+  optOther.textContent = "Other (enter manually))";
   exerciseSelect.appendChild(optOther);
 
   // дефолт
@@ -137,7 +137,7 @@ function syncMusclesFields() {
   // title required тільки для НЕ-muscles
   if (taskTitleInput) {
     taskTitleInput.required = !isMuscles;
-    taskTitleInput.placeholder = isMuscles ? "Назва (опційно)" : "Назва задачі";
+    taskTitleInput.placeholder = isMuscles ? "Name (optional)" : "Task name";
   }
 
   // коли muscles — оновлюємо select вправ (щоб завжди був актуальний)
@@ -193,7 +193,7 @@ taskForm?.addEventListener("submit", (e) => {
     if (!exercise) exercise = taskTitleInput?.value?.trim() || "";
 
     if (!exercise) {
-      alert("Введи вправу 🙂");
+      alert("Enter the exercise🙂");
       (exerciseCustomInput || taskTitleInput)?.focus();
       return;
     }
@@ -208,7 +208,7 @@ taskForm?.addEventListener("submit", (e) => {
   } else {
     const title = taskTitleInput?.value?.trim();
     if (!title) {
-      alert("Введи назву задачі 🙂");
+      alert("Enter the task name🙂");
       taskTitleInput?.focus();
       return;
     }
@@ -298,8 +298,8 @@ document.getElementById("saveGoal")?.addEventListener("click", () => {
   const w = document.getElementById("goalWeight")?.value ?? "";
   const r = document.getElementById("goalReps")?.value ?? "";
 
-  if (!ex.trim()) return alert("Введи назву вправи");
-  if (!Number(w) || !Number(r)) return alert("Введи вагу і повтори");
+  if (!ex.trim()) return alert("Enter the name of the exercise");
+  if (!Number(w) || !Number(r)) return alert("Enter weight and repeat");
 
   setMuscleGoal(state, ex, w, r);
   renderGoalsList();
@@ -317,7 +317,7 @@ document.getElementById("goalsList")?.addEventListener("click", (e) => {
 
 // reset all
 resetAllBtn?.addEventListener("click", () => {
-  const ok = confirm("Точно скинути ВСЕ? Це очистить LocalStorage.");
+  const ok = confirm("Are you sure you want to reset EVERYTHING? This will clear LocalStorage.");
   if (!ok) return;
 
   localStorage.removeItem("planner_state_v1");
