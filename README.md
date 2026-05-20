@@ -21,6 +21,18 @@ Personal frontend project for tracking workouts, discipline, and daily tasks.
 - Backend API
 - Authentication
 - Responsive design
+## Screenshots
 
+### Main screen
+![Main screen](main.png)
+
+### Profile
+![Profile](profile.png)
+
+### Settings
+![Settings](settings.png)
+
+### Planner view
+![Planner view](planner.png)
 ## Author
 Danyil Polishchuk
