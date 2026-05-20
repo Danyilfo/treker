@@ -8,19 +8,16 @@ Personal frontend project for tracking workouts, discipline, and daily tasks.
 - Daily planner
 - Radar chart statistics
 - Task filtering
+- Responsive design
 - Local storage support
 
 ## Technologies
 - JavaScript
 - HTML
 - CSS
+- Chart.js
+- LocalStorage API
 
-## Future Improvements
-- React
-- TypeScript
-- Backend API
-- Authentication
-- Responsive design
 ## Screenshots
 
 ### Main screen
@@ -32,7 +29,29 @@ Personal frontend project for tracking workouts, discipline, and daily tasks.
 ### Settings
 ![Settings](settings.png)
 
-### Planner view
-![Planner view](planner.png)
+## Future Improvements
+- React.js migration
+- TypeScript support
+- Backend API integration
+- Authentication system
+- Cloud synchronization
+- Mobile optimization
+
+## About Project
+Fitness Tracker is a personal productivity and workout tracking application.
+
+The main goal of the project is to help users:
+- organize their daily routine
+- track gym progress
+- improve discipline
+- monitor personal development
+
+The application includes a custom radar chart system for visualizing progress in different categories such as:
+- Muscles
+- Brains
+- Discipline
+- Endurance
+- Mental
+
 ## Author
 Danyil Polishchuk
